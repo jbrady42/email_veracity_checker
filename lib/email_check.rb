@@ -27,10 +27,12 @@ class EmailCheck < Net::SMTP
       }
     end
 
-    def initialize(response_code, error = nil)
+    def initialize(response, error = nil)
       errors = Array.new
       errors.push error unless error.nil?
-      @response = (self.class.rcpt_responses.has_key?(response_code) ?
+      @response = response
+      response_code = @response.status.to_i
+      @resp_status = (self.class.rcpt_responses.has_key?(response_code) ?
                    response_code : -1)
     end
 
@@ -42,7 +44,11 @@ class EmailCheck < Net::SMTP
     # :valid_fails  address known to be valid, delivery would have failed temporarily
     # :invalid      address known to be invalid
     def status
-      @@rcpt_responses[@response]
+      @@rcpt_responses[@resp_status]
+    end
+
+    def response
+      @response
     end
 
     # true if verified address is known to be valid
@@ -75,7 +81,7 @@ class EmailCheck < Net::SMTP
 
     begin
       smtp = EmailCheck.new(server)
-      smtp.set_debug_output $stderr
+      smtp.set_debug_output $stdout
       smtp.start(domain)
       ret = smtp.check_mail_addr(domain, addr, decoy_from)
       smtp.finish
@@ -85,7 +91,7 @@ class EmailCheck < Net::SMTP
         #puts "[CHECK EMAIL EXISTS] ret success is #{ret.success?}."
         #puts "[CHECK EMAIL EXISTS] ret message is #{ret.message}."
         #puts "[CHECK EMAIL EXISTS] ret status is #{ret.status}."
-        ret = EmailCheckStatus.new(ret.message.to_s[0..2].to_i)
+        ret = EmailCheckStatus.new(ret)
       else
         # ruby 1.8.5
         ret = EmailCheckStatus.new(ret[0..2].to_i)
