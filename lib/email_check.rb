@@ -72,7 +72,7 @@ class EmailCheck < Net::SMTP
   #call EmailCheck.run(email, decoy_from, domain, server = nil )
   def self.run(addr, decoy_from, domain, server = nil)
     if addr.index('@').nil?
-      ret = EmailCheckStatus.new(-1, error)
+      ret = EmailCheckStatus.new(-1, "no domain found")
       #puts "[CHECK EMAIL EXISTS] email is #{addr} -> no email specified"
       return ret
     end
