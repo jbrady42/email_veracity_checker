@@ -101,7 +101,7 @@ class EmailCheck < Net::SMTP
         ret = EmailCheckStatus.new(ret[0..2].to_i)
       end
     rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => error
-      ret = EmailCheckStatus.new(error.to_s[0..2].to_i, error)
+      ret = EmailCheckStatus.new(Response.parse(error.to_s), error)
       #puts "[CHECK EMAIL EXISTS] ret1 is #{ret}, error is #{error.to_s[0..2]}."
     rescue IOError, TimeoutError, ArgumentError => error
       ret = EmailCheckStatus.new(nil, error)
