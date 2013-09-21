@@ -28,10 +28,10 @@ class EmailCheck < Net::SMTP
     end
 
     def initialize(response, error = nil)
-      errors = Array.new
-      errors.push error unless error.nil?
+      @errors = Array.new
+      @errors.push error unless error.nil?
       @response = response
-      response_code = @response.status.to_i
+      response_code = !response.nil? ? @response.status.to_i : -10
       @resp_status = (self.class.rcpt_responses.has_key?(response_code) ?
                    response_code : -1)
     end
@@ -60,6 +60,10 @@ class EmailCheck < Net::SMTP
     # true if verified address is known to be invalid
     def invalid?
       self.status == :invalid
+    end
+
+    def errors
+      @errors
     end
   end
 
@@ -100,10 +104,10 @@ class EmailCheck < Net::SMTP
       ret = EmailCheckStatus.new(error.to_s[0..2].to_i, error)
       #puts "[CHECK EMAIL EXISTS] ret1 is #{ret}, error is #{error.to_s[0..2]}."
     rescue IOError, TimeoutError, ArgumentError => error
-      ret = EmailCheckStatus.new(-1, error)
+      ret = EmailCheckStatus.new(nil, error)
       #puts "[CHECK EMAIL EXISTS] ret2 is #{ret}, error is #{error}."
     rescue Exception => error
-      ret = EmailCheckStatus.new(-1, error)
+      ret = EmailCheckStatus.new(nil, error)
       #puts "[CHECK EMAIL EXISTS] ret3 is #{ret}, error is #{error}."
     end
 
